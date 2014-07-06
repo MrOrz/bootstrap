@@ -121,14 +121,47 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
     };
   })
 
-  .factory('$modalStack', ['$transition', '$timeout', '$document', '$compile', '$rootScope', '$$stackedMap',
-    function ($transition, $timeout, $document, $compile, $rootScope, $$stackedMap) {
+  .factory('$modalStack', ['$transition', '$timeout', '$document', '$window', '$compile', '$rootScope', '$$stackedMap',
+    function ($transition, $timeout, $document, $window, $compile, $rootScope, $$stackedMap) {
 
       var OPENED_MODAL_CLASS = 'modal-open';
+      var MEASURE_SCROLLBAR_CLASS = 'modal-scrollbar-measure';
 
       var backdropDomEl, backdropScope;
       var openedWindows = $$stackedMap.createNew();
       var $modalStack = {};
+      var scrollbarWidth = 0;
+      var bodyEl = angular.element($document[0].body);
+
+      // From twbs/bootstrap modal
+      function checkScrollbar() {
+        if (bodyEl[0].clientWidth >= $window.innerWidth) { return; }
+        scrollbarWidth = scrollbarWidth || measureScrollbar();
+      }
+
+      // From twbs/bootstrap modal
+      function measureScrollbar() {
+        var scrollDiv = angular.element('<div class="'+MEASURE_SCROLLBAR_CLASS+'"></div>');
+        bodyEl.append(scrollDiv);
+        var width = scrollDiv[0].offsetWidth - scrollDiv[0].clientWidth;
+        console.log('measureScrollbar', width);
+        scrollDiv.remove();
+        return width;
+      }
+
+      // From twbs/bootstrap modal
+      function setScrollbar() {
+        if (scrollbarWidth) {
+          var bodyPad = parseInt(bodyEl.css('padding-right') || 0, 10);
+          console.log('setting scrollbar: ', bodyPad, scrollbarWidth);
+          bodyEl.css('padding-right', bodyPad + scrollbarWidth + 'px');
+        }
+      }
+
+      // From twbs/bootstrap modal
+      function resetScrollbar(){
+        bodyEl.css('padding-right', '');
+      }
 
       function backdropIndex() {
         var topBackdropIndex = -1;
@@ -159,6 +192,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         removeAfterAnimate(modalWindow.modalDomEl, modalWindow.modalScope, 300, function() {
           modalWindow.modalScope.$destroy();
           body.toggleClass(OPENED_MODAL_CLASS, openedWindows.length() > 0);
+          if (openedWindows.length() === 0) { resetScrollbar(); }
           checkRemoveBackdrop();
         });
       }
@@ -241,6 +275,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
           angularBackgroundDomEl.attr('backdrop-class', modal.backdropClass);
           backdropDomEl = $compile(angularBackgroundDomEl)(backdropScope);
           body.append(backdropDomEl);
+          checkScrollbar();
         }
 
         var angularDomEl = angular.element('<div modal-window></div>');
@@ -256,6 +291,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         openedWindows.top().value.modalDomEl = modalDomEl;
         body.append(modalDomEl);
         body.addClass(OPENED_MODAL_CLASS);
+        setScrollbar();
       };
 
       $modalStack.close = function (modalInstance, result) {
