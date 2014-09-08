@@ -144,7 +144,6 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         var scrollDiv = angular.element('<div class="'+MEASURE_SCROLLBAR_CLASS+'"></div>');
         bodyEl.append(scrollDiv);
         var width = scrollDiv[0].offsetWidth - scrollDiv[0].clientWidth;
-        console.log('measureScrollbar', width);
         scrollDiv.remove();
         return width;
       }
@@ -153,7 +152,6 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
       function setScrollbar() {
         if (scrollbarWidth) {
           var bodyPad = parseInt(bodyEl.css('padding-right') || 0, 10);
-          console.log('setting scrollbar: ', bodyPad, scrollbarWidth);
           bodyEl.css('padding-right', bodyPad + scrollbarWidth + 'px');
         }
       }
