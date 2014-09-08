@@ -135,7 +135,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
 
       // From twbs/bootstrap modal
       function checkScrollbar() {
-        if (bodyEl[0].clientWidth >= $window.innerWidth) { return; }
+        if (bodyEl[0].clientWidth >= $window.innerWidth) { scrollbarWidth = 0; return; }
         scrollbarWidth = scrollbarWidth || measureScrollbar();
       }
 
